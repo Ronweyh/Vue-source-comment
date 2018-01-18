@@ -43,6 +43,20 @@ let platformGetTagNamespace
 
 type Attr = { name: string; value: string };
 
+/**
+ * 
+ * @param {*} tag 
+ * @param {*} attrs 
+ * @param {*} parent 
+ * NOTE:
+ * 1. 生成AST element
+ * 返回对象：
+ *  tag: 标签名，
+ *  attrsList: 属性数组,
+ *  attrsMap：属性map，从属性数组中取出name作为key，value作为value
+ *  parent: 是否有父级？？？
+ *  children: 子元素
+ */
 export function createASTElement (
   tag: string,
   attrs: Array<Attr>,
@@ -114,6 +128,7 @@ export function parse (
    * 3. shouldDecodeNewLines: 
    * 4. shouldDecodeNewlinesForHref:
    * 5. shouldKeepComment: 是否保留注释
+   * 6. start: 
    */
   parseHTML(template, {
     warn,
@@ -124,16 +139,23 @@ export function parse (
     shouldDecodeNewlinesForHref: options.shouldDecodeNewlinesForHref,
     shouldKeepComment: options.comments,
     start (tag, attrs, unary) {
+      /**
+       * NOTE:
+       * 1. tag是标签名
+       * 2. attrs是属性数组
+       */
       // check namespace.
       // inherit parent ns if there is one
+      // TODO: 命名空间？？？？
       const ns = (currentParent && currentParent.ns) || platformGetTagNamespace(tag)
 
       // handle IE svg bug
       /* istanbul ignore if */
       if (isIE && ns === 'svg') {
-        attrs = guardIESVGBug(attrs)
+        attrs = guardIESVGBug(attrs) // TODO: 如果是在 IE 浏览器中，处理svg存在的bug
       }
 
+      // NOTE: element就是单个AST节点，有标签名，属性列表，父级，子级
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns

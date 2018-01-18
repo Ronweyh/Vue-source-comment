@@ -50,6 +50,7 @@ const encodedAttrWithNewLines = /&(?:lt|gt|quot|amp|#10|#9);/g
 const isIgnoreNewlineTag = makeMap('pre,textarea', true)
 const shouldIgnoreFirstNewline = (tag, html) => tag && isIgnoreNewlineTag(tag) && html[0] === '\n'
 
+// NOTE: 对value值进行处理：把转义字符变成正常字符
 function decodeAttr (value, shouldDecodeNewlines) {
   const re = shouldDecodeNewlines ? encodedAttrWithNewLines : encodedAttr
   return value.replace(re, match => decodingMap[match])
@@ -242,6 +243,7 @@ export function parseHTML (html, options) {
 
     const unary = isUnaryTag(tagName) || !!unarySlash
 
+    // NOTE: 把匹配的match.attrs转换成对象，包含name value，并存放到数组中
     const l = match.attrs.length
     const attrs = new Array(l)
     for (let i = 0; i < l; i++) {
@@ -252,21 +254,24 @@ export function parseHTML (html, options) {
         if (args[4] === '') { delete args[4] }
         if (args[5] === '') { delete args[5] }
       }
-      const value = args[3] || args[4] || args[5] || ''
+      const value = args[3] || args[4] || args[5] || '' // NOTE: 取出的是属性值
       const shouldDecodeNewlines = tagName === 'a' && args[1] === 'href'
         ? options.shouldDecodeNewlinesForHref
         : options.shouldDecodeNewlines
+      // NOTE: attrs保存的是属性对象
       attrs[i] = {
-        name: args[1],
+        name: args[1], // NOTE: args[1]是属性名称
         value: decodeAttr(value, shouldDecodeNewlines)
       }
     }
 
+    // NOTE: stack数组将会添加一个对象，保存了标签名、标签名小写、属性数组， 并存储当前标签名到lastTag
     if (!unary) {
       stack.push({ tag: tagName, lowerCasedTag: tagName.toLowerCase(), attrs: attrs })
       lastTag = tagName
     }
 
+    // NOTE: start为parseHtml-options参数
     if (options.start) {
       options.start(tagName, attrs, unary, match.start, match.end)
     }

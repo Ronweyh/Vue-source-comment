@@ -37,8 +37,9 @@ export const isReservedTag = (tag: string): ?boolean => {
   return isHTMLTag(tag) || isSVG(tag)
 }
 
+// NOTE: 返回是否是svg或者math，如果不匹配，将无返回值
 export function getTagNamespace (tag: string): ?string {
-  if (isSVG(tag)) {
+  if (isSVG(tag)) { // 判断是否是svg的内置属性标签
     return 'svg'
   }
   // basic support for MathML
